@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROTOCOLO NEXO [COLAPSO PROFUNDO]</title>
+    <title>PROTOCOLO NEXO [MATRIZ ADAPTATIVA]</title>
     <style>
         :root {
             --bg-color: #0A0A0A;
@@ -38,7 +38,14 @@
         .btn-group { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
         
         .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; margin-bottom: auto; }
-        #game-grid { display: grid; gap: 10px; width: 100%; margin: auto; flex-grow: 1; }
+        #game-grid {
+            display: grid;
+            gap: 10px;
+            width: 100%;
+            margin: auto;
+            flex-grow: 1;
+            /* CORRECCIÓN: El grid-template-columns ahora se controla por JS */
+        }
         #transition-message { font-size: 1.5rem; color: var(--accent-color); }
         #transition-stats { font-size: 1.2rem; color: #888; }
         
@@ -60,19 +67,15 @@
         
         .card.solved { cursor: default; }
         .card.solved .card-inner {
-            /* CORRECCIÓN: PROTOCOLO DE COLAPSO ESTRUCTURAL PROFUNDO */
             transform: rotateY(180deg) scale(0.6);
             filter: grayscale(1);
             opacity: 0.5;
         }
-        .card.solved .card-front {
-             box-shadow: none;
-        }
+        .card.solved .card-front { box-shadow: none; }
 
         .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .card-back { 
-            background-color: var(--card-back-color); 
-            border: 1px solid var(--border-color);
+            background-color: var(--card-back-color); border: 1px solid var(--border-color);
             background-image: 
                 radial-gradient(circle at center, rgba(255,184,0,0.1) 10%, transparent 11%),
                 radial-gradient(circle at center, rgba(255,184,0,0.08) 20%, transparent 21%),
@@ -167,12 +170,25 @@
             
             buildGrid() {
                 const domain = this.DOMAINS.find(d => d.key === this.gameState.currentDomain);
-                const numPairs = this.gameState.totalPairs; const symbols = this.getRandomItems(domain.symbols, numPairs);
+                const numPairs = this.gameState.totalPairs;
+                
+                // CORRECCIÓN: PROTOCOLO DE MATRIZ VERTICAL ADAPTATIVA
+                let columns;
+                const isMobile = window.innerWidth < 768;
+                if (isMobile) {
+                    if (numPairs <= 4) columns = 2;
+                    else if (numPairs <= 6) columns = 3;
+                    else columns = 4;
+                } else {
+                    columns = Math.min(numPairs, 5);
+                }
+                this.dom.gameGrid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+
+                const symbols = this.getRandomItems(domain.symbols, numPairs);
                 const pairs = symbols.flatMap(symbol => [{ id: symbol, content: symbol }]);
                 const finalPairs = pairs.flatMap(p => [p, { ...p }]); this.shuffle(finalPairs);
                 this.dom.gameGrid.innerHTML = ''; 
-                const columns = Math.min(numPairs, 5);
-                this.dom.gameGrid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+                
                 finalPairs.forEach(pair => {
                     const card = document.createElement('div'); card.className = 'card'; card.dataset.id = pair.id;
                     const cardInner = document.createElement('div'); cardInner.className = 'card-inner';
